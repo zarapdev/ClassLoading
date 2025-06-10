@@ -1,26 +1,28 @@
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 public class ClassLoaderTest extends ClassLoader {
-    private byte[] loadClassData(String className) throws IOException {
-        String fileName = className + ".class";  // məsələn: "ForLoading.class"
-        System.out.println("Trying to load: " + fileName); // Debug üçün
-
-        InputStream inputStream = new FileInputStream(fileName);
-        byte[] buffer = new byte[inputStream.available()];
-        inputStream.read(buffer);
-        inputStream.close();
-        return buffer;
-    }
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
+        byte[] classData;
         try {
-            byte[] classBytes = loadClassData("ForLoading");
-            return defineClass(name, classBytes, 0, classBytes.length);
+            classData = loadClassData(name);
+            return defineClass(name, classData, 0, classData.length);
         } catch (IOException e) {
             throw new ClassNotFoundException("Could not load class " + name, e);
         }
+    }
+
+    private byte[] loadClassData(String className) throws IOException {
+        // className = "ForLoading", faylın tam yolunu qururuq
+        String path = "out/production/ClassLoaderTask/" + className + ".class";
+        InputStream input = new FileInputStream(path);
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int data;
+        while ((data = input.read()) != -1) {
+            buffer.write(data);
+        }
+        input.close();
+        return buffer.toByteArray();
     }
 }
